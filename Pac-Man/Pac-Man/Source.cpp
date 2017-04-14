@@ -2,7 +2,13 @@
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_image.h>
 #include "allegro5/allegro_primitives.h"
+#include "allegro5/allegro_font.h"
+#include "allegro5/allegro_ttf.h"
+#include "allegro5/allegro_audio.h"
+#include "allegro5/allegro_acodec.h"
+
 using namespace std;
+int wallCollide(int x, int y, int dir, int map[20][20]);
 int main() {
 	ALLEGRO_DISPLAY*display = NULL;
 	ALLEGRO_EVENT_QUEUE *event_queue = NULL;
@@ -10,10 +16,13 @@ int main() {
 	ALLEGRO_BITMAP*Pacman = NULL;
 	ALLEGRO_BITMAP*wall = NULL;
 	ALLEGRO_BITMAP*dot = NULL;
+	ALLEGRO_FONT * font = NULL;
+	ALLEGRO_SAMPLE *sample = NULL;
 
 	int Pacman_x = 385;
 	int Pacman_y = 565;
 
+	int score = 0;
 
 	int map[20][20] = {
 		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
@@ -46,33 +55,24 @@ int main() {
 	al_init();
 	al_init_image_addon();
 	al_init_primitives_addon();
+	al_init_font_addon();
+	al_init_ttf_addon();
+	al_init_acodec_addon();
+	al_install_audio();
 
 	al_install_keyboard();
+
+	font = al_load_ttf_font("robustA.ttf", 50, NULL);
 
 	timer = al_create_timer(.02);
 
 	display = al_create_display(800, 800);
 
-	for (int x = 0; x<20; x++)
-	{
-		for (int y = 0; y<20; y++)
-		{
-			map[x][y] = map[x][y];
-		}
-	}
-	for (int x = 0; x<20; x++)  // loop 3 times for three lines
-	{
-		for (int y = 0; y<20; y++)  // loop for the three elements on the line
-		{
-			cout << map[x][y];  // display the current element out of the array
-		}
-		cout << endl;  // when the inner loop is done, go to a new line
-	}
 
 
 
 	//    al_rest(3);
-	cout << "flag" << endl;
+	//cout << "flag" << endl;
 	//Pacman = al_create_bitmap(30, 30);
 	//al_set_target_bitmap(Pacman);
 	//al_clear_to_color(al_map_rgb(255, 255, 0));
@@ -101,9 +101,10 @@ int main() {
 	al_flip_display();
 
 	al_start_timer(timer);
-	cout << "flag" << endl;
+	//cout << "flag" << endl;
 	while (!doexit)
 	{
+		cout << Pacman_x << " , " << Pacman_y << endl;
 		ALLEGRO_EVENT ev;
 		al_wait_for_event(event_queue, &ev);
 
@@ -124,13 +125,19 @@ int main() {
 				Pacman_x += 4.0;
 			}
 
+	    if(Pacman_x > -7 && Pacman_x < 1 && Pacman_y > 333 && Pacman_y < 377){
+			Pacman_x = 769;
+		  Pacman_y = 365;
+		}
+		else if (Pacman_x > 765 && Pacman_x < 773 && Pacman_y > 333 && Pacman_y < 377) {
+			Pacman_x = 1;
+			Pacman_y = 365;
+		}
 			//eating dots!
 			if (map[(Pacman_y + 20) / 40][(Pacman_x + 20) / 40] == 0) {
 				map[(Pacman_y + 20) / 40][(Pacman_x + 20) / 40] = 4; //4s are blank spots
-																	 //sound effect here
-																	 //up score here
-
-
+				sample = al_load_sample("wakka.wav");												 //sound effect here
+				score++;													 //up score here
 			}
 
 			redraw = true;
@@ -191,6 +198,7 @@ int main() {
 			redraw = false;
 			al_clear_to_color(al_map_rgb(0, 0, 0));
 
+
 			for (int x = 0; x<20; x++)  // loop 3 times for three lines
 			{
 				for (int y = 0; y<20; y++)  // loop for the three elements on the line
@@ -205,11 +213,10 @@ int main() {
 					//    if ((map[x][y] == 0) && ()
 					//if holds a 2, draw a dot
 				}
-
 			}
+			al_draw_textf(font, al_map_rgb(20, 20, 255), 450, 1, ALLEGRO_ALIGN_CENTRE, "score = %i", score);
 
 			al_draw_bitmap(Pacman, Pacman_x, Pacman_y, 0);
-
 			al_flip_display();
 		}
 	}
@@ -224,3 +231,6 @@ int main() {
 
 	return 0;
 }
+//int wallCollide(int x, int y, int dir, int level[20][20]) {
+
+//}
