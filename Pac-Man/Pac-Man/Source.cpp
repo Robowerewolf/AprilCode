@@ -143,6 +143,8 @@ int main() {
 			redraw = true;
 		}
 
+
+
 		else if (ev.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
 			break;
 		}
@@ -221,7 +223,6 @@ int main() {
 		}
 	}
 
-
 	al_destroy_bitmap(Pacman);
 	al_destroy_display(display);
 	al_destroy_bitmap(wall);
@@ -231,6 +232,15 @@ int main() {
 
 	return 0;
 }
-//int wallCollide(int x, int y, int dir, int level[20][20]) {
-
-//}
+int wallCollide(int x, int y, int dir, int level[20][20]) {
+if (dir == RIGHT) { 		// Moving Right
+							// Check along the far right side of the sprite, plus 3 (the amount we’re moving)
+	new_x1 = x + 3 + PACSIZE;
+	new_x2 = x + 3 + PACSIZE;
+	new_x3 = x + 3 + PACSIZE;
+	// Check at three point along that edge
+	new_y1 = y;
+	new_y2 = y + PACSIZE / 2;
+	new_y3 = y + PACSIZE;
+}
+}
