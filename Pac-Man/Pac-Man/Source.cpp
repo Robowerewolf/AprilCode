@@ -7,8 +7,16 @@
 #include "allegro5/allegro_audio.h"
 #include "allegro5/allegro_acodec.h"
 
+const int RIGHT = 1;
+const int LEFT = 2;
+const int UP = 3;
+const int DOWN = 4;
+
+const int PACSIZE = 30;
+
+
 using namespace std;
-int wallCollide(int x, int y, int dir, int map[20][20]);
+int wallCollide(int Pacman_x, int Pacman_y, int dir, int map[20][20]);
 int main() {
 	ALLEGRO_DISPLAY*display = NULL;
 	ALLEGRO_EVENT_QUEUE *event_queue = NULL;
@@ -16,11 +24,13 @@ int main() {
 	ALLEGRO_BITMAP*Pacman = NULL;
 	ALLEGRO_BITMAP*wall = NULL;
 	ALLEGRO_BITMAP*dot = NULL;
+	ALLEGRO_BITMAP*cherry = NULL;
 	ALLEGRO_FONT * font = NULL;
 	ALLEGRO_SAMPLE *sample = NULL;
 
 	int Pacman_x = 385;
 	int Pacman_y = 565;
+
 
 	int score = 0;
 
@@ -35,7 +45,7 @@ int main() {
 		1,1,1,1,0,1,1,1,0,1,1,0,1,1,1,0,1,1,1,1,
 		1,1,1,1,0,1,0,0,0,0,0,0,0,0,1,0,1,1,1,1,
 		0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0,
-		1,1,1,1,0,1,0,0,0,0,0,0,0,0,1,0,1,1,1,1,
+		1,1,1,1,0,1,0,0,0,2,0,0,0,0,1,0,1,1,1,1,
 		1,1,1,1,0,1,0,1,1,1,1,1,1,0,1,0,1,1,1,1,
 		1,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,1,
 		1,0,1,1,0,1,1,1,0,1,1,0,1,1,1,0,1,1,0,1,
@@ -73,10 +83,15 @@ int main() {
 
 	//    al_rest(3);
 	//cout << "flag" << endl;
-	//Pacman = al_create_bitmap(30, 30);
-	//al_set_target_bitmap(Pacman);
-	//al_clear_to_color(al_map_rgb(255, 255, 0));
+	Pacman = al_create_bitmap(PACSIZE, PACSIZE);
+
+	//cherry = al_create_bitmap(30,30);
+	//al_set_target_bitmap(cherry);
+	//al_clear_to_color(al_map_rgb(255, 0, 0));
+	cherry = al_load_bitmap("cherry_40x40.png");
+
 	Pacman = al_load_bitmap("pacman_30x30.png");
+
 
 	wall = al_create_bitmap(40, 40);
 	al_set_target_bitmap(wall);
@@ -109,35 +124,42 @@ int main() {
 		al_wait_for_event(event_queue, &ev);
 
 		if (ev.type == ALLEGRO_EVENT_TIMER) {
-			if (key[0] && Pacman_y >= 0 + 1) {
+			if (key[0] && wallCollide(Pacman_x, Pacman_y, UP, map) == 0) {
 				Pacman_y -= 4.0;
 			}
 
-			if (key[1] && Pacman_y <= 800 - 32) {
+			if (key[1] && wallCollide(Pacman_x, Pacman_y, DOWN, map) == 0) {
 				Pacman_y += 4.0;
 			}
 
-			if (key[2] && Pacman_x >= 0 + 1) {
+			if (key[2] && wallCollide(Pacman_x, Pacman_y, LEFT, map) == 0) {
 				Pacman_x -= 4.0;
 			}
-
-			if (key[3] && Pacman_x <= 800 - 32) {
+			cout << "flag porter" << endl;
+			//pacman move right
+			if (key[3] && wallCollide(Pacman_x, Pacman_y, RIGHT, map) == 0) {
+				cout << "flag elias" << endl;
 				Pacman_x += 4.0;
 			}
 
-	    if(Pacman_x > -7 && Pacman_x < 1 && Pacman_y > 333 && Pacman_y < 377){
-			Pacman_x = 769;
-		  Pacman_y = 365;
-		}
-		else if (Pacman_x > 765 && Pacman_x < 773 && Pacman_y > 333 && Pacman_y < 377) {
-			Pacman_x = 1;
-			Pacman_y = 365;
-		}
+			if (Pacman_x > -7 && Pacman_x < 1 && Pacman_y > 333 && Pacman_y < 377) {
+				Pacman_x = 769;
+				Pacman_y = 365;
+			}
+			else if (Pacman_x > 765 && Pacman_x < 773 && Pacman_y > 333 && Pacman_y < 377) {
+				Pacman_x = 1;
+				Pacman_y = 365;
+			}
 			//eating dots!
 			if (map[(Pacman_y + 20) / 40][(Pacman_x + 20) / 40] == 0) {
 				map[(Pacman_y + 20) / 40][(Pacman_x + 20) / 40] = 4; //4s are blank spots
-				sample = al_load_sample("wakka.wav");												 //sound effect here
-				score++;													 //up score here
+																	 //sample = al_load_sample("wakka.wav");                                                //sound effect here
+
+				score++;                                                    //up score here
+			}
+			else if (map[(Pacman_y + 20) / 40][(Pacman_x + 20) / 40] == 2) {
+				map[(Pacman_y + 20) / 40][(Pacman_x + 20) / 40] = 4;
+				score = score + 13;
 			}
 
 			redraw = true;
@@ -201,15 +223,17 @@ int main() {
 			al_clear_to_color(al_map_rgb(0, 0, 0));
 
 
-			for (int x = 0; x<20; x++)  // loop 3 times for three lines
+			for (int x = 0; x < 20; x++)  // loop 3 times for three lines
 			{
-				for (int y = 0; y<20; y++)  // loop for the three elements on the line
+				for (int y = 0; y < 20; y++)  // loop for the three elements on the line
 				{
 					//check if matrix holds a "1"
 					if (map[x][y] == 1)
 						al_draw_bitmap(wall, y * 40, x * 40, NULL);
 					if (map[x][y] == 0)
 						al_draw_bitmap(dot, y * 40 + 20, x * 40 + 20, NULL);
+					if (map[x][y] == 2)
+						al_draw_bitmap(cherry, y * 40 , x * 40, NULL);
 
 
 					//    if ((map[x][y] == 0) && ()
@@ -232,15 +256,62 @@ int main() {
 
 	return 0;
 }
-int wallCollide(int x, int y, int dir, int level[20][20]) {
-if (dir == RIGHT) { 		// Moving Right
-							// Check along the far right side of the sprite, plus 3 (the amount we’re moving)
-	new_x1 = x + 3 + PACSIZE;
-	new_x2 = x + 3 + PACSIZE;
-	new_x3 = x + 3 + PACSIZE;
-	// Check at three point along that edge
-	new_y1 = y;
-	new_y2 = y + PACSIZE / 2;
-	new_y3 = y + PACSIZE;
-}
+int wallCollide(int Pacman_x, int Pacman_y, int dir, int map[20][20]) {
+	cout << "flag1" << endl;
+	int new_x1;
+	int new_x2;
+	int new_x3;
+	int new_y1;
+	int new_y2;
+	int new_y3;
+	if (dir == RIGHT) {         // Moving Right
+								// Check along the far right side of the sprite, plus 3 (the amount we’re moving)
+		new_x1 = Pacman_x + 3 + PACSIZE;
+		new_x2 = Pacman_x + 3 + PACSIZE;
+		new_x3 = Pacman_x + 3 + PACSIZE;
+		//Check at three point along that edge
+		new_y1 = Pacman_y;
+		new_y2 = Pacman_y + PACSIZE / 2;
+		new_y3 = Pacman_y + PACSIZE;
+		cout << "flag2" << endl;
+		if (map[new_y1 / 40][new_x1 / 40] == 1 || map[new_y2 / 40][new_x2 / 40] == 1 || map[new_y3 / 40][new_x3 / 40] == 1)//don't forget x3
+			return 1; //collision!
+	}
+	if (dir == LEFT) {
+		new_x1 = Pacman_x - 3;
+		new_x2 = Pacman_x + 3 / 2;
+		new_x3 = Pacman_x;
+
+		new_y1 = Pacman_y;
+		new_y2 = Pacman_y + 3 / 2;
+		new_y3 = Pacman_y + PACSIZE;
+		cout << "flag3" << endl;
+		if (map[new_y1 / 40][new_x1 / 40] == 1 || map[new_y2 / 40][new_x2 / 40] == 1 || map[new_y3 / 40][new_x3 / 40] == 1)//don't forget x3
+			return 1;
+	}
+	if (dir == UP) {
+		new_x1 = Pacman_x;
+		new_x2 = Pacman_x + PACSIZE / 2;
+		new_x3 = Pacman_x + PACSIZE;
+
+		new_y1 = Pacman_y -3;
+		new_y2 = Pacman_y -3;
+		new_y3 = Pacman_y -3;
+
+		if (map[new_y1 / 40][new_x1 / 40] == 1 || map[new_y2 / 40][new_x2 / 40] == 1 || map[new_y3 / 40][new_x3 / 40] == 1)//don't forget x3
+			return 1;
+	}
+	if (dir == DOWN) {
+		new_x1 = Pacman_x;
+		new_x2 = Pacman_x + PACSIZE;
+		new_x3 = Pacman_x + PACSIZE / 2;
+
+		new_y1 = Pacman_y + PACSIZE + 3;
+		new_y2 = Pacman_y + PACSIZE + 3;
+		new_y3 = Pacman_y + PACSIZE + 3;
+
+		if (map[new_y1 / 40][new_x1 / 40] == 1 || map[new_y2 / 40][new_x2 / 40] == 1 || map[new_y3 / 40][new_x3 / 40] == 1)//don't forget x3
+			return 1;
+	}
+	return 0;
 }
