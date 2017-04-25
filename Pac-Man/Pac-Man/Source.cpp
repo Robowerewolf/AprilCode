@@ -31,6 +31,16 @@ int main() {
 	int Pacman_x = 385;
 	int Pacman_y = 565;
 
+	const int maxFrame = 5;
+
+	int curFrame = 0;
+
+	int frameCount = 0;
+
+	int frameDelay = 5;
+
+	int frameWidth = 38;
+	int frameHeight = 30;
 
 	int score = 0;
 
@@ -72,14 +82,22 @@ int main() {
 
 	al_install_keyboard();
 
+
+
 	font = al_load_ttf_font("robustA.ttf", 50, NULL);
 
 	timer = al_create_timer(.02);
 
 	display = al_create_display(800, 800);
 
+	event_queue = al_create_event_queue();
 
+	timer = al_create_timer(1.0 / 60);
 
+	al_register_event_source(event_queue, al_get_timer_event_source(timer));
+	al_register_event_source(event_queue, al_get_keyboard_event_source());
+
+	al_start_timer(timer);
 
 	//    al_rest(3);
 	//cout << "flag" << endl;
@@ -90,7 +108,8 @@ int main() {
 	//al_clear_to_color(al_map_rgb(255, 0, 0));
 	cherry = al_load_bitmap("cherry_40x40.png");
 
-	Pacman = al_load_bitmap("pacman_30x30.png");
+	//Pacman = al_load_bitmap("pacman_30x30.png");
+	Pacman = al_load_bitmap("pacman-spritesheet_190x30.png");
 
 
 	wall = al_create_bitmap(40, 40);
@@ -117,7 +136,7 @@ int main() {
 
 	al_start_timer(timer);
 	//cout << "flag" << endl;
-	while (!doexit)
+	while (!doexit && score < 200)
 	{
 		cout << Pacman_x << " , " << Pacman_y << endl;
 		ALLEGRO_EVENT ev;
@@ -153,7 +172,7 @@ int main() {
 			//eating dots!
 			if (map[(Pacman_y + 20) / 40][(Pacman_x + 20) / 40] == 0) {
 				map[(Pacman_y + 20) / 40][(Pacman_x + 20) / 40] = 4; //4s are blank spots
-																	 //sample = al_load_sample("wakka.wav");                                                //sound effect here
+																	                                                //sound effect here
 
 				score++;                                                    //up score here
 			}
@@ -163,8 +182,23 @@ int main() {
 			}
 
 			redraw = true;
-		}
 
+			if (++frameCount >= frameDelay) {
+				if (++curFrame >= maxFrame)
+					curFrame = 0;
+
+				frameCount = 0;
+			}
+			//Pacman_x -= 5;
+
+			if (Pacman_x <= 0 - frameWidth)
+				Pacman_x = 30;
+
+			sample = al_load_sample("wakka.wav"); 
+
+
+			
+		}
 
 
 		else if (ev.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
@@ -242,10 +276,14 @@ int main() {
 			}
 			al_draw_textf(font, al_map_rgb(20, 20, 255), 450, 1, ALLEGRO_ALIGN_CENTRE, "score = %i", score);
 
-			al_draw_bitmap(Pacman, Pacman_x, Pacman_y, 0);
+			al_draw_bitmap_region(Pacman,curFrame*frameWidth, 0, frameWidth, frameHeight, Pacman_x, Pacman_y, 0);
 			al_flip_display();
 		}
 	}
+	al_clear_to_color(al_map_rgb(0, 0, 0));
+	al_draw_text(font, al_map_rgb(20, 20, 255), 640 / 2, (480 / 4), ALLEGRO_ALIGN_CENTRE, "You Win!");
+	al_rest(2);
+
 
 	al_destroy_bitmap(Pacman);
 	al_destroy_display(display);
