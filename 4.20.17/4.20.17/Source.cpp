@@ -109,7 +109,7 @@ int main() {
 
 			earth_y = Earth_Semimajor_Axis*(sqrt((1 - Earth_Eccentricity)*(1 - Earth_Eccentricity))*sin((t*3.14*Period_Ratio_Earth) / 180)) + SCREEN_HEIGHT / 2;
 
-			mars_x = mars_Semimajor_Axis*(sin((t*3.14*Period_Ratio_mars) / 180 - mars_Eccentricity)) + SCREEN_WIDTH / 2;
+			mars_x = mars_Semimajor_Axis*(cos((t*3.14*Period_Ratio_mars) / 180 - mars_Eccentricity)) + SCREEN_WIDTH / 2;
 
 			mars_y = mars_Semimajor_Axis*(sqrt((1 - mars_Eccentricity)*(1 - mars_Eccentricity))*sin((t*3.14*Period_Ratio_mars) / 180)) + SCREEN_HEIGHT / 2;
 

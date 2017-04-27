@@ -17,6 +17,27 @@ const int PACSIZE = 30;
 
 using namespace std;
 int wallCollide(int Pacman_x, int Pacman_y, int dir, int map[20][20]);
+
+class ghosts {
+public:
+	ghosts();
+	void initGhost(int x, int y, char c, int dir, bool dead, int Gspeed);
+	bool isdead();
+	void drawGhost();
+	void printInfo();
+	void chase(int x, int y, int field[20][20]); //need 4 eventually
+	bool getPacman(int x, int y);
+
+private:
+	int hitwall;
+	int xpos;
+	int ypos;
+	char color;
+	int direction;
+	bool dead;
+	int speed;
+
+};
 int main() {
 	ALLEGRO_DISPLAY*display = NULL;
 	ALLEGRO_EVENT_QUEUE *event_queue = NULL;
@@ -27,6 +48,10 @@ int main() {
 	ALLEGRO_BITMAP*cherry = NULL;
 	ALLEGRO_FONT * font = NULL;
 	ALLEGRO_SAMPLE *sample = NULL;
+	ALLEGRO_BITMAP*pinky = NULL;
+	ALLEGRO_BITMAP*blinky = NULL;
+	ALLEGRO_BITMAP*inky = NULL;
+	ALLEGRO_BITMAP*clyde = NULL;
 
 	int Pacman_x = 385;
 	int Pacman_y = 565;
@@ -114,11 +139,29 @@ int main() {
 
 	wall = al_create_bitmap(40, 40);
 	al_set_target_bitmap(wall);
-	al_clear_to_color(al_map_rgb(120, 0, 120));
+	al_clear_to_color(al_map_rgb(0, 37, 115));
 
 	dot = al_create_bitmap(8, 8);
 	al_set_target_bitmap(dot);
 	al_clear_to_color(al_map_rgb(255, 255, 255));
+
+	pinky = al_create_bitmap(15, 15);
+	al_set_target_bitmap(pinky);
+	al_clear_to_color(al_map_rgb(253, 194, 212));
+
+	blinky = al_create_bitmap(15, 15);
+	al_set_target_bitmap(blinky);
+	al_clear_to_color(al_map_rgb(252, 59, 16));
+
+	inky = al_create_bitmap(15, 15);
+	al_set_target_bitmap(inky);
+	al_clear_to_color(al_map_rgb(74, 223, 203));
+
+	clyde = al_create_bitmap(15, 15);
+	al_set_target_bitmap(clyde);
+	al_clear_to_color(al_map_rgb(255, 190, 86));
+
+	//initGhost(int x, int y, char c, int dir, bool dead, int Gspeed);
 
 	al_set_target_bitmap(al_get_backbuffer(display));
 
@@ -269,11 +312,16 @@ int main() {
 					if (map[x][y] == 2)
 						al_draw_bitmap(cherry, y * 40 , x * 40, NULL);
 
-
 					//    if ((map[x][y] == 0) && ()
 					//if holds a 2, draw a dot
 				}
 			}
+
+			al_draw_bitmap(pinky, 100, 175, NULL);
+			al_draw_bitmap(blinky, 481, 41, NULL);
+			al_draw_bitmap(inky, 161, 641, NULL);
+			al_draw_bitmap(clyde, 717, 245, NULL);
+
 			al_draw_textf(font, al_map_rgb(20, 20, 255), 450, 1, ALLEGRO_ALIGN_CENTRE, "score = %i", score);
 
 			al_draw_bitmap_region(Pacman,curFrame*frameWidth, 0, frameWidth, frameHeight, Pacman_x, Pacman_y, 0);
@@ -353,3 +401,4 @@ int wallCollide(int Pacman_x, int Pacman_y, int dir, int map[20][20]) {
 	}
 	return 0;
 }
+//int ghosts::

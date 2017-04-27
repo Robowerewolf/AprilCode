@@ -137,9 +137,8 @@ int main()
 				beam2_x = ship_x + t;
 				////equation for beam////////////////////////////////////////////////////////////
 				//LOOK! LOOK! Here's where you can change the path of the beam!
-
-				beam_y = ship_y + 10 * sin(.25 *(beam_x += 25)) + 50;
-				beam2_y = ship_y + 20 * sin(.25 *(beam2_x += 5)) + 20;
+				beam_y = ship_y + 0 * sin(.25 *(beam_x += 25)) + 20;
+				beam2_y = ship_y + 20 * sin(.25 *(beam2_x += 0)) + 20;
 				////////////////////////////////////////////////////////////////
 
 				t++; //increase time
@@ -302,7 +301,7 @@ int main()
 			//when not being fired, beam is behind ship
 
 			al_draw_bitmap(beam, beam_x, beam_y, 0);
-			//al_draw_bitmap(beam2, beam2_x, beam2_y, 0);
+			al_draw_bitmap(beam2, beam2_x, beam2_y, 0);
 
 			//draw ship
 
