@@ -7,9 +7,9 @@
 #include "allegro5/allegro_audio.h"
 #include "allegro5/allegro_acodec.h"
 
-const int RIGHT = 1;
-const int LEFT = 2;
-const int UP = 3;
+const int RIGHT = 3;
+const int LEFT = 1;
+const int UP = 2;
 const int DOWN = 4;
 
 const int PACSIZE = 30;
@@ -21,12 +21,13 @@ int wallCollide(int Pacman_x, int Pacman_y, int dir, int map[20][20]);
 class ghosts {
 public:
 	ghosts();
-	void initGhost(int x, int y, char c, int dir, bool dead, int Gspeed);
+	void initGhost(int x, int y, char color, int direction, bool dead, int speed);
 	bool isdead();
+	//void draw();
 	void drawGhost();
 	void printInfo();
-	void chase(int x, int y, int field[20][20]); //need 4 eventually
-	bool getPacman(int x, int y);
+	void chase(int x, int y, int map[20][20]); //need 4 eventually
+	bool getPacman(int xpos, int ypos);
 
 private:
 	int hitwall;
@@ -48,10 +49,6 @@ int main() {
 	ALLEGRO_BITMAP*cherry = NULL;
 	ALLEGRO_FONT * font = NULL;
 	ALLEGRO_SAMPLE *sample = NULL;
-	ALLEGRO_BITMAP*pinky = NULL;
-	ALLEGRO_BITMAP*blinky = NULL;
-	ALLEGRO_BITMAP*inky = NULL;
-	ALLEGRO_BITMAP*clyde = NULL;
 
 	int Pacman_x = 385;
 	int Pacman_y = 565;
@@ -124,6 +121,10 @@ int main() {
 
 	al_start_timer(timer);
 
+	ghosts blinky;
+	blinky.initGhost(160, 160,'F', 10, false, 10);
+		//initGhost(int xpos, int ypos, char color, int direction, bool dead, int speed);
+
 	//    al_rest(3);
 	//cout << "flag" << endl;
 	Pacman = al_create_bitmap(PACSIZE, PACSIZE);
@@ -145,23 +146,22 @@ int main() {
 	al_set_target_bitmap(dot);
 	al_clear_to_color(al_map_rgb(255, 255, 255));
 
-	pinky = al_create_bitmap(15, 15);
-	al_set_target_bitmap(pinky);
-	al_clear_to_color(al_map_rgb(253, 194, 212));
+	//pinky = al_create_bitmap(15, 15);
+	//al_set_target_bitmap(pinky);
+	//al_clear_to_color(al_map_rgb(253, 194, 212));
 
-	blinky = al_create_bitmap(15, 15);
-	al_set_target_bitmap(blinky);
-	al_clear_to_color(al_map_rgb(252, 59, 16));
+	//blinky = al_create_bitmap(15, 15);
+	//al_set_target_bitmap(blinky);
+	//al_clear_to_color(al_map_rgb(252, 59, 16));
 
-	inky = al_create_bitmap(15, 15);
-	al_set_target_bitmap(inky);
-	al_clear_to_color(al_map_rgb(74, 223, 203));
+	//inky = al_create_bitmap(15, 15);
+	//al_set_target_bitmap(inky);
+	//al_clear_to_color(al_map_rgb(74, 223, 203));
 
-	clyde = al_create_bitmap(15, 15);
-	al_set_target_bitmap(clyde);
-	al_clear_to_color(al_map_rgb(255, 190, 86));
+	//clyde = al_create_bitmap(15, 15);
+	//al_set_target_bitmap(clyde);
+	//al_clear_to_color(al_map_rgb(255, 190, 86));
 
-	//initGhost(int x, int y, char c, int dir, bool dead, int Gspeed);
 
 	al_set_target_bitmap(al_get_backbuffer(display));
 
@@ -223,6 +223,9 @@ int main() {
 				map[(Pacman_y + 20) / 40][(Pacman_x + 20) / 40] = 4;
 				score = score + 13;
 			}
+
+
+			blinky.chase(Pacman_x, Pacman_y, map);
 
 			redraw = true;
 
@@ -317,17 +320,20 @@ int main() {
 				}
 			}
 
-			al_draw_bitmap(pinky, 100, 175, NULL);
-			al_draw_bitmap(blinky, 481, 41, NULL);
-			al_draw_bitmap(inky, 161, 641, NULL);
-			al_draw_bitmap(clyde, 717, 245, NULL);
+
+			blinky.drawGhost();
+
+			if (char color = 'F')
+				al_map_rgb(252, 59, 16);
 
 			al_draw_textf(font, al_map_rgb(20, 20, 255), 450, 1, ALLEGRO_ALIGN_CENTRE, "score = %i", score);
 
 			al_draw_bitmap_region(Pacman,curFrame*frameWidth, 0, frameWidth, frameHeight, Pacman_x, Pacman_y, 0);
 			al_flip_display();
 		}
-	}
+	}//end game loop
+	
+
 	al_clear_to_color(al_map_rgb(0, 0, 0));
 	al_draw_text(font, al_map_rgb(20, 20, 255), 640 / 2, (480 / 4), ALLEGRO_ALIGN_CENTRE, "You Win!");
 	al_rest(2);
@@ -401,4 +407,202 @@ int wallCollide(int Pacman_x, int Pacman_y, int dir, int map[20][20]) {
 	}
 	return 0;
 }
-//int ghosts::
+
+//ghost class functions
+ghosts::ghosts() {
+	xpos = 0;
+	ypos = 0;
+	dead = 0;
+}
+
+void ghosts::initGhost(int x, int y, char c, int dir, bool dead, int Gspeed) {
+	xpos = x;
+	ypos = y;
+	dead = 0;
+
+}
+bool ghosts::isdead() {
+	return dead;
+}
+void ghosts::drawGhost() {
+	cout << "drawing ghost at " << xpos << " " << ypos << endl;
+	al_draw_filled_rectangle(xpos, ypos, xpos + 30, ypos + 30, al_map_rgb(20, 20, 255));
+
+}
+void ghosts::printInfo() {
+}
+void ghosts::chase(int x, int y, int map[20][20]) {
+	//if we're moving left and there's an opening above and pacman is above, move up
+	if ((direction == LEFT) && !wallCollide(xpos, ypos, UP, map) && y<ypos)
+		while (!wallCollide(xpos, ypos, 2, map)) {
+			// cout << "trying to move through hole above!" << endl;
+			direction = UP;
+			ypos -= 4;
+			return;
+		}
+
+	//if we're moving left and there's an opening below and pacman is below, move down
+	if ((direction == LEFT) && !wallCollide(xpos, ypos, DOWN, map) && y>ypos)
+		while (!wallCollide(xpos, ypos, 4, map)) {
+			//  cout << "trying to move through hole below!" << endl;
+			direction = DOWN;
+			ypos += 4;
+			return;
+		}
+
+
+	if (direction == LEFT)//left
+		while (!wallCollide(xpos, ypos, LEFT, map)) {
+			xpos -= 4;
+			return;
+		}
+
+	////////////////////////////////UP STATE (2)///////////////////////////////////////////////////////////////
+
+	//if we're moving up and there's an opening left and pacman is left, move left
+	if ((direction == UP) && !wallCollide(xpos, ypos, LEFT, map) && x<xpos)
+		while (!wallCollide(xpos, ypos, LEFT, map)) {
+			//   cout << "trying to move through hole to left!" << endl;
+			direction = LEFT;
+			xpos -= 4;
+			return;
+		}
+	//if we're moving up and there's an opening right and pacman is right, move right
+	if ((direction == UP) && !wallCollide(xpos, ypos, RIGHT, map) && x>xpos)
+		while (!wallCollide(xpos, ypos, 3, map)) {
+			// cout << "trying to move through hole to right!" << endl;
+			direction = RIGHT;
+			xpos += 4;
+			return;
+		}
+	if (direction == UP)//up
+		while (!wallCollide(xpos, ypos, 2, map)) {
+			ypos -= UP;
+			return;
+		}
+
+	/////////RIGHT CASE (3)/////////////////////////////////////////////////////////////////////////////////////////////////////
+	//if we're moving right and there's an opening above and pacman is above, move up
+	if ((direction == RIGHT) && !wallCollide(xpos, ypos, UP, map) && y<ypos)
+		while (!wallCollide(xpos, ypos, 2, map)) {
+			//   cout << "trying to move through hole above!" << endl;
+			direction = UP;
+			ypos -= 2;
+			return;
+		}
+
+	//if we're moving right and there's an opening below and pacman is below, move down
+	if ((direction == RIGHT) && !wallCollide(xpos, ypos, DOWN, map) && y>ypos)
+		while (!wallCollide(xpos, ypos, DOWN, map)) {
+			//  cout << "trying to move through hole below!" << endl;
+			direction = DOWN;
+			ypos += 2;
+			return;
+		}
+
+
+	if (direction == RIGHT)//right
+		while (!wallCollide(xpos, ypos, RIGHT, map)) {
+			xpos += 2;
+			return;
+		}
+
+
+	//////////////DOWN CASE (4)/////////////////////////////////////////////////////////////////////////////////////
+	//if we're moving up and there's an opening left and pacman is left, move left
+	if ((direction == DOWN) && !wallCollide(xpos, ypos, LEFT, map) && x<xpos)
+		while (!wallCollide(xpos, ypos, LEFT, map)) {
+			// cout << "trying to move through hole to left!" << endl;
+			direction = LEFT;
+			xpos -= 2;
+			return;
+		}
+	//if we're moving up and there's an opening right and pacman is right, move right
+	if ((direction == UP) && !wallCollide(xpos, ypos, RIGHT, map) && x>xpos)
+		while (!wallCollide(xpos, ypos, RIGHT, map)) {
+			//   cout << "trying to move through hole to right!" << endl;
+			direction = RIGHT;
+			xpos += 2;
+			return;
+		}
+
+	if (direction == DOWN)//down
+		while (!wallCollide(xpos, ypos, DOWN, map)) {
+			ypos += 2;
+			return;
+		}
+
+
+
+
+
+	///////////////////////////////////////////////////////////////////////////////////////
+	//if pacman is above and there's no wall there, move up
+	if ((y<ypos) && !wallCollide(xpos, ypos, UP, map)) {
+		//  cout << "direction is up" << endl;
+		direction = UP;
+		return;
+	}
+
+
+	//if pacman is below and there's no wall there, move down
+	if ((y>ypos) && !wallCollide(xpos, ypos, DOWN, map)) {
+		direction = DOWN;
+		//   cout << "direction is down" << endl;
+		return;
+	}
+
+	//if pacman is right and there's no wall there, move right
+	if ((x>xpos) && !wallCollide(xpos, ypos, RIGHT, map)) {
+		direction = RIGHT;
+		//  cout << "direction is right" << endl;
+		return;
+	}
+
+	//if pacman is left and there's no wall there, move left
+	if ((x<xpos) && !wallCollide(xpos, ypos, LEFT, map)) {
+		direction = LEFT;
+		// cout << "direction is left" << endl;
+		return;
+
+	}
+
+	//if pacman is above and there's no wall there, move up
+	if (!wallCollide(xpos, ypos, UP, map)) {
+		// cout << "direction is up" << endl;
+		direction = UP;
+		return;
+	}
+
+
+	//if pacman is below and there's no wall there, move down
+	if (!wallCollide(xpos, ypos, DOWN, map)) {
+		direction = DOWN;
+		//cout << "direction is down" << endl;
+		return;
+	}
+
+	//if pacman is right and there's no wall there, move right
+	if (!wallCollide(xpos, ypos, RIGHT, map)) {
+		direction = RIGHT;
+		//  cout << "direction is right" << endl;
+		return;
+	}
+
+	//if pacman is left and there's no wall there, move left
+	if (!wallCollide(xpos, ypos, LEFT, map)) {
+		direction = LEFT;
+		// cout << "direction is left" << endl;
+		return;
+
+	}
+
+}cout << "x pos " << xpos << "  ypos " << ypos << endl;
+
+
+} //need 4 eventually
+bool ghosts::getPacman(int xpos, int ypos) {
+	dead = true;
+	return 1;
+
+}
