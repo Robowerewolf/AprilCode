@@ -5,6 +5,7 @@
 #include "allegro5/allegro_font.h"
 #include "allegro5/allegro_ttf.h"
 #include "allegro5/allegro_audio.h"
+#include <Windows.h>
 #include "allegro5/allegro_acodec.h"
 
 const int RIGHT = 3;
@@ -23,11 +24,10 @@ public:
 	ghosts();
 	void initGhost(int x, int y, char color, int direction, bool dead, int speed);
 	bool isdead();
-	//void draw();
 	void drawGhost();
 	void printInfo();
 	void chase(int x, int y, int map[20][20]); //need 4 eventually
-	bool getPacman(int xpos, int ypos);
+	bool getPacman(int PacX, int PacY);
 
 private:
 	int hitwall;
@@ -122,7 +122,14 @@ int main() {
 	al_start_timer(timer);
 
 	ghosts blinky;
-	blinky.initGhost(160, 160,'F', 10, false, 10);
+	blinky.initGhost(160, 160,'R', 10, false, 10);
+	ghosts inky;
+	inky.initGhost(460, 160, 'B', 10, false, 10);
+	ghosts pinky;
+	pinky.initGhost(260, 160, 'P', 10, false, 10);
+	ghosts clyde;
+	clyde.initGhost(360, 160, 'O', 10, false, 10);
+
 		//initGhost(int xpos, int ypos, char color, int direction, bool dead, int speed);
 
 	//    al_rest(3);
@@ -224,8 +231,22 @@ int main() {
 				score = score + 13;
 			}
 
-
 			blinky.chase(Pacman_x, Pacman_y, map);
+
+			inky.chase(Pacman_x /2, Pacman_y/2, map);
+
+			pinky.chase(Pacman_x + 16, Pacman_y + 16, map);
+
+			clyde.chase(Pacman_x - 25, Pacman_y - 25, map);
+
+			//ITS SIMPLE, WE KILL THE PACMAN
+			if (blinky.getPacman(Pacman_x, Pacman_y) == 1) {
+				cout << "IM DEAAAAAD" << endl;
+				Beep(800, 800);
+				return 0;
+
+			}
+
 
 			redraw = true;
 
@@ -322,9 +343,9 @@ int main() {
 
 
 			blinky.drawGhost();
-
-			if (char color = 'F')
-				al_map_rgb(252, 59, 16);
+			inky.drawGhost();
+			pinky.drawGhost();
+			clyde.drawGhost();
 
 			al_draw_textf(font, al_map_rgb(20, 20, 255), 450, 1, ALLEGRO_ALIGN_CENTRE, "score = %i", score);
 
@@ -419,15 +440,25 @@ void ghosts::initGhost(int x, int y, char c, int dir, bool dead, int Gspeed) {
 	xpos = x;
 	ypos = y;
 	dead = 0;
-
+	color = c;
 }
 bool ghosts::isdead() {
-	return dead;
+	return dead;  
 }
 void ghosts::drawGhost() {
 	cout << "drawing ghost at " << xpos << " " << ypos << endl;
-	al_draw_filled_rectangle(xpos, ypos, xpos + 30, ypos + 30, al_map_rgb(20, 20, 255));
-
+	if (color == 'R') {
+		al_draw_filled_rectangle(xpos, ypos, xpos + 25, ypos + 25, al_map_rgb(252, 59, 16));
+	}
+	if (color == 'B') {
+		al_draw_filled_rectangle(xpos, ypos, xpos + 25, ypos + 25, al_map_rgb(74, 223, 203));
+	}
+	if (color == 'P') {
+		al_draw_filled_rectangle(xpos, ypos, xpos + 25, ypos + 25, al_map_rgb(253, 194, 212));
+	}
+	if (color == 'O') {
+		al_draw_filled_rectangle(xpos, ypos, xpos + 25, ypos + 25, al_map_rgb(255, 190, 86));
+	}
 }
 void ghosts::printInfo() {
 }
@@ -597,12 +628,12 @@ void ghosts::chase(int x, int y, int map[20][20]) {
 
 	}
 
-}cout << "x pos " << xpos << "  ypos " << ypos << endl;
-
-
-} //need 4 eventually
-bool ghosts::getPacman(int xpos, int ypos) {
-	dead = true;
-	return 1;
+}
+ //need 4 eventually
+bool ghosts::getPacman(int PacX, int PacY) {
+	if (xpos + 25 > PacX && xpos < PacX + 30 && ypos + 25 > PacY && ypos < PacY + 30) {
+		dead = true;
+		return 1;
+	}
 
 }
