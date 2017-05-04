@@ -15,7 +15,6 @@ const int DOWN = 4;
 
 const int PACSIZE = 30;
 
-
 using namespace std;
 int wallCollide(int Pacman_x, int Pacman_y, int dir, int map[20][20]);
 
@@ -28,6 +27,7 @@ public:
 	void printInfo();
 	void chase(int x, int y, int map[20][20]); //need 4 eventually
 	bool getPacman(int PacX, int PacY);
+	void setPosition(int x, int y);
 
 private:
 	int hitwall;
@@ -65,6 +65,8 @@ int main() {
 	int frameHeight = 30;
 
 	int score = 0;
+
+	int lives = 3;
 
 	int map[20][20] = {
 		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
@@ -105,7 +107,6 @@ int main() {
 	al_install_keyboard();
 
 
-
 	font = al_load_ttf_font("robustA.ttf", 50, NULL);
 
 	timer = al_create_timer(.02);
@@ -122,7 +123,7 @@ int main() {
 	al_start_timer(timer);
 
 	ghosts blinky;
-	blinky.initGhost(160, 160,'R', 10, false, 10);
+	blinky.initGhost(160, 160, 'R', 10, false, 10);
 	ghosts inky;
 	inky.initGhost(460, 160, 'B', 10, false, 10);
 	ghosts pinky;
@@ -130,10 +131,10 @@ int main() {
 	ghosts clyde;
 	clyde.initGhost(360, 160, 'O', 10, false, 10);
 
-		//initGhost(int xpos, int ypos, char color, int direction, bool dead, int speed);
+	//initGhost(int xpos, int ypos, char color, int direction, bool dead, int speed);
 
-	//    al_rest(3);
-	//cout << "flag" << endl;
+//    al_rest(3);
+//cout << "flag" << endl;
 	Pacman = al_create_bitmap(PACSIZE, PACSIZE);
 
 	//cherry = al_create_bitmap(30,30);
@@ -157,9 +158,7 @@ int main() {
 	//al_set_target_bitmap(pinky);
 	//al_clear_to_color(al_map_rgb(253, 194, 212));
 
-	//blinky = al_create_bitmap(15, 15);
-	//al_set_target_bitmap(blinky);
-	//al_clear_to_color(al_map_rgb(252, 59, 16));
+	
 
 	//inky = al_create_bitmap(15, 15);
 	//al_set_target_bitmap(inky);
@@ -186,13 +185,28 @@ int main() {
 
 	al_start_timer(timer);
 	//cout << "flag" << endl;
-	while (!doexit && score < 200)
+	while (!doexit)
 	{
 		cout << Pacman_x << " , " << Pacman_y << endl;
 		ALLEGRO_EVENT ev;
 		al_wait_for_event(event_queue, &ev);
 
 		if (ev.type == ALLEGRO_EVENT_TIMER) {
+
+			if (lives == 0) {
+				al_clear_to_color(al_map_rgb(0, 0, 0));
+				al_draw_text(font, al_map_rgb(20, 20, 255), 640 / 2, (480 / 4), ALLEGRO_ALIGN_CENTRE, "You Lose!");
+				al_flip_display();
+				al_rest(1);
+			}
+			if (score == 200) {
+				al_clear_to_color(al_map_rgb(0, 0, 0));
+				al_draw_text(font, al_map_rgb(20, 20, 255), 640 / 2, (480 / 4), ALLEGRO_ALIGN_CENTRE, "You Win!");
+				al_flip_display();
+				al_rest(1);
+			}
+
+
 			if (key[0] && wallCollide(Pacman_x, Pacman_y, UP, map) == 0) {
 				Pacman_y -= 4.0;
 			}
@@ -209,6 +223,21 @@ int main() {
 			if (key[3] && wallCollide(Pacman_x, Pacman_y, RIGHT, map) == 0) {
 				cout << "flag elias" << endl;
 				Pacman_x += 4.0;
+				if (++frameCount >= frameDelay) {
+					if (++curFrame >= maxFrame)
+						curFrame = 0;
+
+					frameCount = 0;
+				}
+				//Pacman_x -= 5;
+
+				if (Pacman_x <= 0 - frameWidth)
+					Pacman_x = 30;
+
+				//	sample = al_load_sample("wakka.wav");
+
+
+
 			}
 
 			if (Pacman_x > -7 && Pacman_x < 1 && Pacman_y > 333 && Pacman_y < 377) {
@@ -222,7 +251,7 @@ int main() {
 			//eating dots!
 			if (map[(Pacman_y + 20) / 40][(Pacman_x + 20) / 40] == 0) {
 				map[(Pacman_y + 20) / 40][(Pacman_x + 20) / 40] = 4; //4s are blank spots
-																	                                                //sound effect here
+																													//sound effect here
 
 				score++;                                                    //up score here
 			}
@@ -231,41 +260,55 @@ int main() {
 				score = score + 13;
 			}
 
+
 			blinky.chase(Pacman_x, Pacman_y, map);
 
-			inky.chase(Pacman_x /2, Pacman_y/2, map);
+			clyde.chase(Pacman_x / 2, Pacman_y / 2, map);
 
 			pinky.chase(Pacman_x + 16, Pacman_y + 16, map);
 
-			clyde.chase(Pacman_x - 25, Pacman_y - 25, map);
+			inky.chase(Pacman_x + 45, Pacman_y + 45, map);
 
 			//ITS SIMPLE, WE KILL THE PACMAN
 			if (blinky.getPacman(Pacman_x, Pacman_y) == 1) {
 				cout << "IM DEAAAAAD" << endl;
-				Beep(800, 800);
-				return 0;
+				Pacman_x = 385;
+				Pacman_y = 565;
+				blinky.setPosition(160, 160);
+				lives--;
+
+			}
+			if (inky.getPacman(Pacman_x, Pacman_y) == 1) {
+				cout << "IM DEAAAAAD" << endl;
+				Pacman_x = 385;
+				Pacman_y = 565;
+				inky.setPosition(460, 160);
+				lives--;
+
+			}
+			if (pinky.getPacman(Pacman_x, Pacman_y) == 1) {
+				cout << "IM DEAAAAAD" << endl;
+				Pacman_x = 385;
+				Pacman_y = 565;
+				pinky.setPosition(260, 160);
+				lives--;
+
+			}
+			if (clyde.getPacman(Pacman_x, Pacman_y) == 1) {
+				cout << "IM DEAAAAAD" << endl;
+				Pacman_x = 385;
+				Pacman_y = 565;
+				clyde.setPosition(360, 160);
+				lives--;
 
 			}
 
 
 			redraw = true;
 
-			if (++frameCount >= frameDelay) {
-				if (++curFrame >= maxFrame)
-					curFrame = 0;
-
-				frameCount = 0;
-			}
-			//Pacman_x -= 5;
-
-			if (Pacman_x <= 0 - frameWidth)
-				Pacman_x = 30;
-
-			sample = al_load_sample("wakka.wav"); 
-
+		}
 
 			
-		}
 
 
 		else if (ev.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
@@ -334,7 +377,7 @@ int main() {
 					if (map[x][y] == 0)
 						al_draw_bitmap(dot, y * 40 + 20, x * 40 + 20, NULL);
 					if (map[x][y] == 2)
-						al_draw_bitmap(cherry, y * 40 , x * 40, NULL);
+						al_draw_bitmap(cherry, y * 40, x * 40, NULL);
 
 					//    if ((map[x][y] == 0) && ()
 					//if holds a 2, draw a dot
@@ -347,13 +390,14 @@ int main() {
 			pinky.drawGhost();
 			clyde.drawGhost();
 
-			al_draw_textf(font, al_map_rgb(20, 20, 255), 450, 1, ALLEGRO_ALIGN_CENTRE, "score = %i", score);
+			al_draw_bitmap_region(Pacman, curFrame * frameWidth, 0, frameWidth, frameHeight, Pacman_x, Pacman_y, 0);
+			al_draw_textf(font, al_map_rgb(20, 20, 255), 250, 1, ALLEGRO_ALIGN_CENTRE, "score = %i", score);
+			al_draw_textf(font, al_map_rgb(20, 20, 255), 550, 1, ALLEGRO_ALIGN_CENTRE, "lives = %i", lives);
 
-			al_draw_bitmap_region(Pacman,curFrame*frameWidth, 0, frameWidth, frameHeight, Pacman_x, Pacman_y, 0);
 			al_flip_display();
 		}
 	}//end game loop
-	
+
 
 	al_clear_to_color(al_map_rgb(0, 0, 0));
 	al_draw_text(font, al_map_rgb(20, 20, 255), 640 / 2, (480 / 4), ALLEGRO_ALIGN_CENTRE, "You Win!");
@@ -407,9 +451,9 @@ int wallCollide(int Pacman_x, int Pacman_y, int dir, int map[20][20]) {
 		new_x2 = Pacman_x + PACSIZE / 2;
 		new_x3 = Pacman_x + PACSIZE;
 
-		new_y1 = Pacman_y -3;
-		new_y2 = Pacman_y -3;
-		new_y3 = Pacman_y -3;
+		new_y1 = Pacman_y - 3;
+		new_y2 = Pacman_y - 3;
+		new_y3 = Pacman_y - 3;
 
 		if (map[new_y1 / 40][new_x1 / 40] == 1 || map[new_y2 / 40][new_x2 / 40] == 1 || map[new_y3 / 40][new_x3 / 40] == 1)//don't forget x3
 			return 1;
@@ -443,7 +487,7 @@ void ghosts::initGhost(int x, int y, char c, int dir, bool dead, int Gspeed) {
 	color = c;
 }
 bool ghosts::isdead() {
-	return dead;  
+	return dead;
 }
 void ghosts::drawGhost() {
 	cout << "drawing ghost at " << xpos << " " << ypos << endl;
@@ -464,7 +508,7 @@ void ghosts::printInfo() {
 }
 void ghosts::chase(int x, int y, int map[20][20]) {
 	//if we're moving left and there's an opening above and pacman is above, move up
-	if ((direction == LEFT) && !wallCollide(xpos, ypos, UP, map) && y<ypos)
+	if ((direction == LEFT) && !wallCollide(xpos, ypos, UP, map) && y < ypos)
 		while (!wallCollide(xpos, ypos, 2, map)) {
 			// cout << "trying to move through hole above!" << endl;
 			direction = UP;
@@ -473,7 +517,7 @@ void ghosts::chase(int x, int y, int map[20][20]) {
 		}
 
 	//if we're moving left and there's an opening below and pacman is below, move down
-	if ((direction == LEFT) && !wallCollide(xpos, ypos, DOWN, map) && y>ypos)
+	if ((direction == LEFT) && !wallCollide(xpos, ypos, DOWN, map) && y > ypos)
 		while (!wallCollide(xpos, ypos, 4, map)) {
 			//  cout << "trying to move through hole below!" << endl;
 			direction = DOWN;
@@ -491,7 +535,7 @@ void ghosts::chase(int x, int y, int map[20][20]) {
 	////////////////////////////////UP STATE (2)///////////////////////////////////////////////////////////////
 
 	//if we're moving up and there's an opening left and pacman is left, move left
-	if ((direction == UP) && !wallCollide(xpos, ypos, LEFT, map) && x<xpos)
+	if ((direction == UP) && !wallCollide(xpos, ypos, LEFT, map) && x < xpos)
 		while (!wallCollide(xpos, ypos, LEFT, map)) {
 			//   cout << "trying to move through hole to left!" << endl;
 			direction = LEFT;
@@ -499,7 +543,7 @@ void ghosts::chase(int x, int y, int map[20][20]) {
 			return;
 		}
 	//if we're moving up and there's an opening right and pacman is right, move right
-	if ((direction == UP) && !wallCollide(xpos, ypos, RIGHT, map) && x>xpos)
+	if ((direction == UP) && !wallCollide(xpos, ypos, RIGHT, map) && x > xpos)
 		while (!wallCollide(xpos, ypos, 3, map)) {
 			// cout << "trying to move through hole to right!" << endl;
 			direction = RIGHT;
@@ -514,7 +558,7 @@ void ghosts::chase(int x, int y, int map[20][20]) {
 
 	/////////RIGHT CASE (3)/////////////////////////////////////////////////////////////////////////////////////////////////////
 	//if we're moving right and there's an opening above and pacman is above, move up
-	if ((direction == RIGHT) && !wallCollide(xpos, ypos, UP, map) && y<ypos)
+	if ((direction == RIGHT) && !wallCollide(xpos, ypos, UP, map) && y < ypos)
 		while (!wallCollide(xpos, ypos, 2, map)) {
 			//   cout << "trying to move through hole above!" << endl;
 			direction = UP;
@@ -523,7 +567,7 @@ void ghosts::chase(int x, int y, int map[20][20]) {
 		}
 
 	//if we're moving right and there's an opening below and pacman is below, move down
-	if ((direction == RIGHT) && !wallCollide(xpos, ypos, DOWN, map) && y>ypos)
+	if ((direction == RIGHT) && !wallCollide(xpos, ypos, DOWN, map) && y > ypos)
 		while (!wallCollide(xpos, ypos, DOWN, map)) {
 			//  cout << "trying to move through hole below!" << endl;
 			direction = DOWN;
@@ -541,7 +585,7 @@ void ghosts::chase(int x, int y, int map[20][20]) {
 
 	//////////////DOWN CASE (4)/////////////////////////////////////////////////////////////////////////////////////
 	//if we're moving up and there's an opening left and pacman is left, move left
-	if ((direction == DOWN) && !wallCollide(xpos, ypos, LEFT, map) && x<xpos)
+	if ((direction == DOWN) && !wallCollide(xpos, ypos, LEFT, map) && x < xpos)
 		while (!wallCollide(xpos, ypos, LEFT, map)) {
 			// cout << "trying to move through hole to left!" << endl;
 			direction = LEFT;
@@ -549,7 +593,7 @@ void ghosts::chase(int x, int y, int map[20][20]) {
 			return;
 		}
 	//if we're moving up and there's an opening right and pacman is right, move right
-	if ((direction == UP) && !wallCollide(xpos, ypos, RIGHT, map) && x>xpos)
+	if ((direction == UP) && !wallCollide(xpos, ypos, RIGHT, map) && x > xpos)
 		while (!wallCollide(xpos, ypos, RIGHT, map)) {
 			//   cout << "trying to move through hole to right!" << endl;
 			direction = RIGHT;
@@ -569,7 +613,7 @@ void ghosts::chase(int x, int y, int map[20][20]) {
 
 	///////////////////////////////////////////////////////////////////////////////////////
 	//if pacman is above and there's no wall there, move up
-	if ((y<ypos) && !wallCollide(xpos, ypos, UP, map)) {
+	if ((y < ypos) && !wallCollide(xpos, ypos, UP, map)) {
 		//  cout << "direction is up" << endl;
 		direction = UP;
 		return;
@@ -577,21 +621,21 @@ void ghosts::chase(int x, int y, int map[20][20]) {
 
 
 	//if pacman is below and there's no wall there, move down
-	if ((y>ypos) && !wallCollide(xpos, ypos, DOWN, map)) {
+	if ((y > ypos) && !wallCollide(xpos, ypos, DOWN, map)) {
 		direction = DOWN;
 		//   cout << "direction is down" << endl;
 		return;
 	}
 
 	//if pacman is right and there's no wall there, move right
-	if ((x>xpos) && !wallCollide(xpos, ypos, RIGHT, map)) {
+	if ((x > xpos) && !wallCollide(xpos, ypos, RIGHT, map)) {
 		direction = RIGHT;
 		//  cout << "direction is right" << endl;
 		return;
 	}
 
 	//if pacman is left and there's no wall there, move left
-	if ((x<xpos) && !wallCollide(xpos, ypos, LEFT, map)) {
+	if ((x < xpos) && !wallCollide(xpos, ypos, LEFT, map)) {
 		direction = LEFT;
 		// cout << "direction is left" << endl;
 		return;
@@ -629,11 +673,15 @@ void ghosts::chase(int x, int y, int map[20][20]) {
 	}
 
 }
- //need 4 eventually
+//need 4 eventually
 bool ghosts::getPacman(int PacX, int PacY) {
 	if (xpos + 25 > PacX && xpos < PacX + 30 && ypos + 25 > PacY && ypos < PacY + 30) {
 		dead = true;
 		return 1;
 	}
 
+}
+void ghosts::setPosition(int x, int y) {
+	xpos = x;
+	ypos = y;
 }
