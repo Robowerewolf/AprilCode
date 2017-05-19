@@ -174,7 +174,7 @@ int main() {
 				cout << "snek is dead, hit wall" << endl;
 				cout << Ekans_x <<" , "<< Ekans_y << endl;
 				al_clear_to_color(al_map_rgb(0, 0, 0));
-				al_draw_textf(font, al_map_rgb(250, 0, 0), 300, 300, NULL, "Ekans is ded.");
+				al_draw_textf(font, al_map_rgb(251, 0, 0), 300, 300, NULL, "Ekans is ded.");
 				al_flip_display();
 				al_rest(2);
 			}
