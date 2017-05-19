@@ -8,16 +8,14 @@
 #include <Windows.h>
 #include "allegro5/allegro_acodec.h"
 
-const int RIGHT = 3;
-const int LEFT = 1;
-const int UP = 2;
-const int DOWN = 4;
+enum directions {LEFT, RIGHT, UP, DOWN};
 
 const int PACSIZE = 30;
 
 using namespace std;
 int wallCollide(int Pacman_x, int Pacman_y, int dir, int map[20][20]);
 
+int dir;
 class ghosts {
 public:
 	ghosts();
@@ -38,22 +36,27 @@ private:
 	bool dead;
 	int speed;
 
+
 };
 int main() {
 	ALLEGRO_DISPLAY*display = NULL;
 	ALLEGRO_EVENT_QUEUE *event_queue = NULL;
 	ALLEGRO_TIMER *timer = NULL;
 	ALLEGRO_BITMAP*Pacman = NULL;
+	ALLEGRO_BITMAP*PacmanUp = NULL;
+	ALLEGRO_BITMAP*PacmanDown = NULL;
 	ALLEGRO_BITMAP*wall = NULL;
 	ALLEGRO_BITMAP*dot = NULL;
 	ALLEGRO_BITMAP*cherry = NULL;
 	ALLEGRO_FONT * font = NULL;
 	ALLEGRO_SAMPLE *sample = NULL;
+	ALLEGRO_SAMPLE_INSTANCE *instance = NULL;
 
 	int Pacman_x = 385;
 	int Pacman_y = 565;
 
 	const int maxFrame = 5;
+
 
 	int curFrame = 0;
 
@@ -103,9 +106,17 @@ int main() {
 	al_init_ttf_addon();
 	al_init_acodec_addon();
 	al_install_audio();
+	al_reserve_samples(10);
 
 	al_install_keyboard();
 
+	sample = al_load_sample("music.wav");
+	instance = al_create_sample_instance(sample);
+	al_set_sample_instance_playmode(instance, ALLEGRO_PLAYMODE_LOOP);
+
+	al_attach_sample_instance_to_mixer(instance, al_get_default_mixer());
+
+	al_play_sample_instance(instance);
 
 	font = al_load_ttf_font("robustA.ttf", 50, NULL);
 
@@ -136,6 +147,8 @@ int main() {
 //    al_rest(3);
 //cout << "flag" << endl;
 	Pacman = al_create_bitmap(PACSIZE, PACSIZE);
+	PacmanDown = al_create_bitmap(PACSIZE, PACSIZE);
+	PacmanUp = al_create_bitmap(PACSIZE, PACSIZE);
 
 	//cherry = al_create_bitmap(30,30);
 	//al_set_target_bitmap(cherry);
@@ -144,7 +157,8 @@ int main() {
 
 	//Pacman = al_load_bitmap("pacman_30x30.png");
 	Pacman = al_load_bitmap("pacman-spritesheet_190x30.png");
-
+	PacmanDown = al_load_bitmap("pacman-spritesheet-down.png");
+	PacmanUp = al_load_bitmap("pacman-spritesheet-Up.png");
 
 	wall = al_create_bitmap(40, 40);
 	al_set_target_bitmap(wall);
@@ -217,12 +231,24 @@ int main() {
 
 			if (key[2] && wallCollide(Pacman_x, Pacman_y, LEFT, map) == 0) {
 				Pacman_x -= 4.0;
+				dir = LEFT;
+				if (++frameCount >= frameDelay) {
+					if (++curFrame >= maxFrame)
+						curFrame = 0;
+
+					frameCount = 0;
+				}
+				//Pacman_x -= 5;
+
+				if (Pacman_x <= 0 - frameWidth)
+					Pacman_x = 30;
 			}
 			cout << "flag porter" << endl;
 			//pacman move right
 			if (key[3] && wallCollide(Pacman_x, Pacman_y, RIGHT, map) == 0) {
 				cout << "flag elias" << endl;
 				Pacman_x += 4.0;
+				dir = RIGHT;
 				if (++frameCount >= frameDelay) {
 					if (++curFrame >= maxFrame)
 						curFrame = 0;
@@ -234,7 +260,7 @@ int main() {
 				if (Pacman_x <= 0 - frameWidth)
 					Pacman_x = 30;
 
-				//	sample = al_load_sample("wakka.wav");
+					
 
 
 
@@ -390,7 +416,15 @@ int main() {
 			pinky.drawGhost();
 			clyde.drawGhost();
 
-			al_draw_bitmap_region(Pacman, curFrame * frameWidth, 0, frameWidth, frameHeight, Pacman_x, Pacman_y, 0);
+			if(dir == RIGHT)
+				al_draw_bitmap_region(Pacman, curFrame * frameWidth, 0, frameWidth, frameHeight, Pacman_x, Pacman_y, 0);
+			
+			if(dir == LEFT)
+				al_draw_bitmap_region(Pacman, curFrame * frameWidth, 0, frameWidth, frameHeight, Pacman_x, Pacman_y, 1);
+			if(dir == UP)
+				al_draw_rotated_bitmap(Pacman, curFrame * frameWidth,0, frameWidth, frameHeight, 0, 0);
+
+			//al_convert_mask_to_alpha(PacmanDown, al_map_rgb(255, 255, 255));
 			al_draw_textf(font, al_map_rgb(20, 20, 255), 250, 1, ALLEGRO_ALIGN_CENTRE, "score = %i", score);
 			al_draw_textf(font, al_map_rgb(20, 20, 255), 550, 1, ALLEGRO_ALIGN_CENTRE, "lives = %i", lives);
 
@@ -405,6 +439,8 @@ int main() {
 
 
 	al_destroy_bitmap(Pacman);
+	al_destroy_bitmap(PacmanUp);
+	al_destroy_bitmap(PacmanDown);
 	al_destroy_display(display);
 	al_destroy_bitmap(wall);
 	al_destroy_bitmap(dot);
