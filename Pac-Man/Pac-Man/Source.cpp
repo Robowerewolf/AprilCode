@@ -422,7 +422,7 @@ int main() {
 			if(dir == LEFT)
 				al_draw_bitmap_region(Pacman, curFrame * frameWidth, 0, frameWidth, frameHeight, Pacman_x, Pacman_y, 1);
 			if(dir == UP)
-				al_draw_rotated_bitmap(Pacman, curFrame * frameWidth,0, frameWidth, frameHeight, 0, 0);
+				al_draw_rotated_bitmap(Pacman, curFrame * frameWidth,0, frameWidth, frameHeight, 0, 1);
 
 			//al_convert_mask_to_alpha(PacmanDown, al_map_rgb(255, 255, 255));
 			al_draw_textf(font, al_map_rgb(20, 20, 255), 250, 1, ALLEGRO_ALIGN_CENTRE, "score = %i", score);
